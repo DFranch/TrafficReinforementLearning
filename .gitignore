@@ -104,5 +104,6 @@ venv.bak/
 .gitignore
 traci_tls/embedded/
 traci_tls/plain/
+.DS_Store
 
 .idea/
