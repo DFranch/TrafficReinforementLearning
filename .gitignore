@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.gitignore
+traci_tls/embedded/
+traci_tls/plain/
