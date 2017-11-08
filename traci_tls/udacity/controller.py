@@ -70,12 +70,10 @@ for i in range(1,1000):
     else:
         result = e.step('rGrG')
 
-
     arrived_vehicles_in_last_step = simulation.getArrivedNumber()
     departed_vehicles_in_last_step = simulation.getDepartedNumber()
 
     phase = trafficlights.getPhase(TLSID)
-
 
     lanes = trafficlights.getControlledLanes(TLSID)
 
