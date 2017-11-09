@@ -48,7 +48,7 @@ print(nb_actions)
 
 # Next, we build a very simple model.
 model = Sequential()
-model.add(Flatten(input_shape=(1,19)))
+model.add(Flatten(input_shape=(1,7)))
 model.add(Dense(64))
 model.add(Activation('relu'))
 model.add(Dense(32))

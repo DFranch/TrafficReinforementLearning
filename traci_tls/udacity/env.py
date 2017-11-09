@@ -63,20 +63,50 @@ class FickDich(object):
                        vehicles_ended_teleport, vehicles_still_expected]
 
         reward = 0
-        avg_edge_values = np.zeros(1)
+        avg_edge_values = np.zeros(13)
         for e_id in self.edges:
+            print(traci.edge.getCO2Emission(e_id))
             edge_values = [
+                traci.edge.getWaitingTime(e_id),
                 traci.edge.getCO2Emission(e_id),
+                traci.edge.getCOEmission(e_id),
+                traci.edge.getHCEmission(e_id),
+                traci.edge.getPMxEmission(e_id),
+                traci.edge.getNOxEmission(e_id),
+                traci.edge.getFuelConsumption(e_id),
+                traci.edge.getLastStepMeanSpeed(e_id),
+                traci.edge.getLastStepOccupancy(e_id),
+                traci.edge.getLastStepLength(e_id),
+                traci.edge.getTraveltime(e_id),
+                traci.edge.getLastStepVehicleNumber(e_id),
+                traci.edge.getLastStepHaltingNumber(e_id)
             ]
+            #scale using the amount of vehicles
+            if edge_values[11]>0:
+                edge_values[7] /= edge_values[11]
+                edge_values[1] /= edge_values[11]
+                edge_values[0] /= edge_values[11]
             avg_edge_values = np.add(avg_edge_values, edge_values)
 
-        print(avg_edge_values)
-        observation = [avg_edge_values]
 
-        reward += -avg_edge_values
+        avg_edge_values /= len(self.edges)
+
+        observation.extend(avg_edge_values)
+
+        waitingFactor = -avg_edge_values[0] / 100
+        if waitingFactor == 0:
+            waitingFactor += 1
+        co2_factor = -avg_edge_values[1] / 3000
+        fuel_factor = -avg_edge_values[7]
+        green_factor=7*(action.count("g")+action.count("G"))/self.lanes
+        yellow_factor=-0.5*action.count("y")/self.lanes
+        red_factor=-2*action.count("r")/self.lanes
+
+        reward += waitingFactor+co2_factor+fuel_factor+green_factor+yellow_factor+red_factor
 
         done = False
-        info = reward
+        info = {"waitingFactor": waitingFactor, "co2_factor":co2_factor,"fuel_factor":fuel_factor,
+                "green_factor":green_factor,"yellow_factor":yellow_factor,"red_factor":red_factor,"total_reward":reward}
 
         return observation, reward, done, info
 
