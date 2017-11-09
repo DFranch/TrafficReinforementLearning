@@ -1,72 +1,70 @@
 # -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 import sys, os
 
 import numpy as np
-"""
+
 from keras.models import Sequential, Model
 from keras.layers import Dense, Activation, Flatten, Input, merge
 from keras.optimizers import Adam
-"""
+from keras.callbacks import TensorBoard
+
 from env import FickDich
+from logger import TrafficCallback
 from gym import spaces
 
 import os
 import subprocess
 import sys
 import shutil
-"""
+
 from rl.agents import ContinuousDQNAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
 from rl.core import Processor
-"""
+from rl.agents.dqn import DQNAgent
+from rl.policy import BoltzmannQPolicy
+from rl.memory import SequentialMemory
+from rl.callbacks import FileLogger
+
+
 try:
     sys.path.append(os.path.join(os.path.dirname(
-        __file__), '..', '..', '..', '..', "tools"))  # tutorial in tests
+        "__file__"), '..', '..', '..', '..', "tools"))  # tutorial in tests
     sys.path.append(os.path.join(os.environ.get("SUMO_HOME", os.path.join(
-        os.path.dirname(__file__), "..", "..", "..")), "tools"))  # tutorial in docs
+        os.path.dirname("__file__"), "..", "..", "..")), "tools"))  # tutorial in docs
     from sumolib import checkBinary  # noqa
 except ImportError:
     sys.exit(
         "please declare environment variable 'SUMO_HOME' as the root directory of your sumo installation (it should contain folders 'bin', 'tools' and 'docs')")
 
 netconvertBinary = checkBinary('netconvert')
-sumoBinary = checkBinary('sumo')
-sumoCmd = [sumoBinary, "-c", "../data/hello.sumocfg"]
 
-from traci import simulation, trafficlights, simulationStep, close
+env = FickDich()
+env.reset()
 
-step = 0
-tl = trafficlights
+nb_actions = env.action_space.n
 
-reward_range = (-np.inf, np.inf)
-observation_space = spaces.Box(low=0, high=1000, shape=(1, 19))
+print(nb_actions)
 
-edges = []
-TLSID = "0"
+# Next, we build a very simple model.
+model = Sequential()
+model.add(Flatten(input_shape=(1,19)))
+model.add(Dense(64))
+model.add(Activation('relu'))
+model.add(Dense(32))
+model.add(Activation('relu'))
+model.add(Dense(16))
+model.add(Activation('relu'))
+model.add(Dense(nb_actions))
+model.add(Activation('linear'))
+print(model.summary())
 
-e = FickDich(12)
-action_space = spaces.Discrete(2)
-e.reset()
 
-for i in range(1, 1000):
+memory = SequentialMemory(limit=50000, window_length=1)
+policy = BoltzmannQPolicy()
+dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, policy=policy)
+dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
-    arrived_vehicles_in_last_step = simulation.getArrivedNumber()
-    departed_vehicles_in_last_step = simulation.getDepartedNumber()
-    current_simulation_time_ms = simulation.getCurrentTime()
+history = dqn.fit(env, nb_steps=50000, visualize=False, verbose=1)
 
-    result = e.step(action_space.sample())
-
-    phase = trafficlights.getPhase(TLSID)
-
-    lanes = trafficlights.getControlledLanes(TLSID)
-
-    step += 1
-
-    print(result)
-e.close()
+env.close()
