@@ -241,12 +241,3 @@ class FickDich(object):
             tl_list.append(connection[2])
         return tl_list
 
-
-e = FickDich(12)
-print(e.action_space)
-e.reset()
-for i in range(1,1000):
-    result= e.step('rrrrGgrrrrGg')
-
-    print(result[3])
-e.close()

@@ -99,8 +99,12 @@ class FickDich(object):
         vehicles_started_to_teleport = traci.simulation.getStartingTeleportNumber()
         vehicles_ended_teleport = traci.simulation.getEndingTeleportNumber()
         vehicles_still_expected = traci.simulation.getMinExpectedNumber()
-        #traci.trafficlights.setRedYellowGreenState(self.TLSID, action)
-        #print(action)
+        print(action)
+        action = self.convert_sample_to_phase(action)
+        print(action)
+        traci.trafficlights.setRedYellowGreenState('0', action)
+
+
         observation = [arrived_vehicles_in_last_step, departed_vehicles_in_last_step,
                        current_simulation_time_ms, vehicles_started_to_teleport,
                        vehicles_ended_teleport, vehicles_still_expected]
@@ -242,3 +246,9 @@ class FickDich(object):
         for connection in connection_list:
             tl_list.append(connection[2])
         return tl_list
+
+    def convert_sample_to_phase(self, sample):
+        if sample == 1:
+            return 'rGrG'
+        else:
+            return 'GrGr'
