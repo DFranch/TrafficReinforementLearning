@@ -249,6 +249,6 @@ class FickDich(object):
 
     def convert_sample_to_phase(self, sample):
         if sample == 1:
-            return 'rGrG'
+            return 'rgrg'
         else:
-            return 'GrGr'
+            return 'grgr'

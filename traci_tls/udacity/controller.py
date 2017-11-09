@@ -51,12 +51,6 @@ edges = []
 TLSID = "0"
 
 e = FickDich(12)
-
-space_init=[]
-for i in range(0,4):
-    space_init.append([0, 3])
-
-print(space_init)
 action_space = spaces.Discrete(2)
 e.reset()
 
@@ -69,7 +63,7 @@ for i in range(1, 1000):
     result = e.step(action_space.sample())
 
     phase = trafficlights.getPhase(TLSID)
-    #print(phase)
+
     lanes = trafficlights.getControlledLanes(TLSID)
 
     step += 1
